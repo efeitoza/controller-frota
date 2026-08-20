@@ -1,0 +1,15 @@
+{
+  "name": "Controller — Gestão de Frota",
+  "short_name": "Controller",
+  "description": "Jornada, abastecimento, manutenção e despesas de veículos e motos.",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#1e34af",
+  "theme_color": "#1d3cd8",
+  "orientation": "portrait",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
