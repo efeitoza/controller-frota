@@ -4,11 +4,14 @@ import { demoDB, novoId, salvarDemo } from "./demo";
 import { emailDoLogin, supabase, temSupabase } from "./supabase";
 import {
   AppUser,
+  CatalogItem,
+  CatalogKind,
   Driver,
   EpiRecord,
   FuelRecord,
   Journey,
   MaintenanceRecord,
+  Occurrence,
   Vehicle,
 } from "./types";
 
@@ -403,6 +406,165 @@ export async function listarEpis(f: Filtros = {}): Promise<EpiRecord[]> {
   const { data, error } = await q;
   erro(error);
   return (data as EpiRecord[]) ?? [];
+}
+
+/* ------------------------------------------------------------------ */
+/* Ocorrências (perfil Supervisão)                                     */
+/* ------------------------------------------------------------------ */
+
+export interface FiltrosOcorrencia extends Filtros {
+  supervisorId?: string;
+  linha?: string;
+  motorista?: string;
+  motivo?: string;
+}
+
+export async function listarOcorrencias(f: FiltrosOcorrencia = {}): Promise<Occurrence[]> {
+  if (!temSupabase) {
+    const db = demoDB();
+    return db.occurrences
+      .filter(
+        (o) =>
+          dentro(o.date, f) &&
+          (!f.supervisorId || o.supervisor_id === f.supervisorId) &&
+          (!f.linha || o.line === f.linha) &&
+          (!f.motorista || o.driver_code === f.motorista) &&
+          (!f.motivo || o.reason === f.motivo)
+      )
+      .sort((a, b) => (b.date + (b.time ?? "")).localeCompare(a.date + (a.time ?? "")));
+  }
+  let q = supabase()
+    .from("occurrences")
+    .select("*")
+    .order("date", { ascending: false })
+    .order("time", { ascending: false });
+  if (f.de) q = q.gte("date", f.de);
+  if (f.ate) q = q.lte("date", f.ate);
+  if (f.supervisorId) q = q.eq("supervisor_id", f.supervisorId);
+  if (f.linha) q = q.eq("line", f.linha);
+  if (f.motorista) q = q.eq("driver_code", f.motorista);
+  if (f.motivo) q = q.eq("reason", f.motivo);
+  const { data, error } = await q;
+  erro(error);
+  return (data as Occurrence[]) ?? [];
+}
+
+export async function registrarOcorrencia(o: Partial<Occurrence>): Promise<Occurrence> {
+  if (!temSupabase) {
+    const db = demoDB();
+    const nova = { ...o, id: novoId("o"), created_at: new Date().toISOString() } as Occurrence;
+    db.occurrences.unshift(nova);
+    salvarDemo();
+    return nova;
+  }
+  const { data, error } = await supabase().from("occurrences").insert(o).select().single();
+  erro(error);
+  return data as Occurrence;
+}
+
+export async function atualizarStatusOcorrencia(
+  id: string,
+  status: Occurrence["status"]
+): Promise<void> {
+  if (!temSupabase) {
+    const db = demoDB();
+    const i = db.occurrences.findIndex((o) => o.id === id);
+    if (i >= 0) db.occurrences[i].status = status;
+    salvarDemo();
+    return;
+  }
+  const { error } = await supabase().from("occurrences").update({ status }).eq("id", id);
+  erro(error);
+}
+
+/** Histórico do motorista — usado para sinalizar reincidência. */
+export async function historicoMotorista(
+  driverCode: string
+): Promise<{ total: number; ultima: Occurrence | null }> {
+  if (!driverCode.trim()) return { total: 0, ultima: null };
+  if (!temSupabase) {
+    const lista = demoDB()
+      .occurrences.filter((o) => o.driver_code === driverCode.trim())
+      .sort((a, b) => b.date.localeCompare(a.date));
+    return { total: lista.length, ultima: lista[0] ?? null };
+  }
+  const { data, error } = await supabase()
+    .from("occurrences")
+    .select("*")
+    .eq("driver_code", driverCode.trim())
+    .order("date", { ascending: false });
+  erro(error);
+  const lista = (data as Occurrence[]) ?? [];
+  return { total: lista.length, ultima: lista[0] ?? null };
+}
+
+/** Usuários do sistema — o gestor enxerga todos; os demais, só a si. */
+export async function listarUsuarios(): Promise<AppUser[]> {
+  if (!temSupabase) return [...demoDB().users];
+  const { data, error } = await supabase().from("users").select("*").order("name");
+  erro(error);
+  return (data as AppUser[]) ?? [];
+}
+
+/* --------------------------- catálogo ----------------------------- */
+
+export async function listarCatalogo(kind?: CatalogKind): Promise<CatalogItem[]> {
+  if (!temSupabase) {
+    const itens = demoDB().catalog.filter((c) => !kind || c.kind === kind);
+    return [...itens].sort((a, b) => a.code.localeCompare(b.code, "pt-BR", { numeric: true }));
+  }
+  let q = supabase().from("operation_catalog").select("*").eq("active", true).order("code");
+  if (kind) q = q.eq("kind", kind);
+  const { data, error } = await q;
+  erro(error);
+  return (data as CatalogItem[]) ?? [];
+}
+
+export async function salvarCatalogo(
+  itens: { kind: CatalogKind; code: string; name?: string | null }[]
+): Promise<number> {
+  const limpos = itens
+    .map((i) => ({ ...i, code: i.code.trim(), name: i.name?.trim() || null }))
+    .filter((i) => i.code);
+  if (!limpos.length) return 0;
+
+  if (!temSupabase) {
+    const db = demoDB();
+    let novos = 0;
+    limpos.forEach((i) => {
+      const existe = db.catalog.find((c) => c.kind === i.kind && c.code === i.code);
+      if (existe) {
+        existe.name = i.name ?? existe.name;
+      } else {
+        db.catalog.push({
+          id: novoId("c"),
+          active: true,
+          kind: i.kind,
+          code: i.code,
+          name: i.name ?? null,
+        });
+        novos++;
+      }
+    });
+    salvarDemo();
+    return novos;
+  }
+  const { error } = await supabase()
+    .from("operation_catalog")
+    .upsert(limpos, { onConflict: "kind,code" });
+  erro(error);
+  return limpos.length;
+}
+
+export async function removerCatalogo(id: string): Promise<void> {
+  if (!temSupabase) {
+    const db = demoDB();
+    db.catalog = db.catalog.filter((c) => c.id !== id);
+    salvarDemo();
+    return;
+  }
+  const { error } = await supabase().from("operation_catalog").delete().eq("id", id);
+  erro(error);
 }
 
 /* ------------------------------------------------------------------ */

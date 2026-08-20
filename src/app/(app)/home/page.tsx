@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AppHeader } from "@/components/AppHeader";
+import { HomeSupervisao } from "@/components/HomeSupervisao";
 import { useSessao } from "@/components/SessaoProvider";
 import { Aviso, Card, Carregando, Etiqueta, Stat, Vazio } from "@/components/ui";
 import { IconeSeta } from "@/components/icons";
@@ -18,7 +19,7 @@ import { brl, dataBR, hora, kml, num, periodo } from "@/lib/format";
 import { Alerta, FuelRecord, Journey, MaintenanceRecord } from "@/lib/types";
 
 export default function Home() {
-  const { sessao, veiculoAtual, ehAdmin } = useSessao();
+  const { sessao, veiculoAtual, ehAdmin, ehSupervisor } = useSessao();
   const driverId = sessao?.driver?.id ?? "";
   const [carregando, setCarregando] = useState(true);
   const [aberta, setAberta] = useState<Journey | null>(null);
@@ -30,6 +31,10 @@ export default function Home() {
   const [media, setMedia] = useState<number | null>(null);
 
   const carregar = useCallback(async () => {
+    if (ehSupervisor) {
+      setCarregando(false);
+      return;
+    }
     if (!veiculoAtual) {
       setCarregando(false);
       return;
@@ -61,7 +66,7 @@ export default function Home() {
       })
     );
     setCarregando(false);
-  }, [veiculoAtual, driverId, ehAdmin]);
+  }, [veiculoAtual, driverId, ehAdmin, ehSupervisor]);
 
   useEffect(() => {
     void carregar();
@@ -80,7 +85,9 @@ export default function Home() {
     <>
       <AppHeader />
       <main className="-mt-3 space-y-3 px-4">
-        {carregando ? (
+        {ehSupervisor ? (
+          <HomeSupervisao />
+        ) : carregando ? (
           <Carregando />
         ) : !veiculoAtual ? (
           <Card titulo="Nenhum veículo">

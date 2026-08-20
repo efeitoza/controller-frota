@@ -2,28 +2,41 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSessao } from "./SessaoProvider";
 import {
   IconeCombustivel,
   IconeHome,
   IconeJornada,
   IconeManutencao,
+  IconeOcorrencia,
   IconeRelatorio,
 } from "./icons";
 
-const itens = [
-  { href: "/home", texto: "Home", Icone: IconeHome },
-  { href: "/jornada", texto: "Jornada", Icone: IconeJornada },
-  { href: "/abastecimento", texto: "Abastecer", Icone: IconeCombustivel },
-  { href: "/manutencao", texto: "Manutenção", Icone: IconeManutencao },
-  { href: "/relatorios", texto: "Relatórios", Icone: IconeRelatorio },
-];
+const ITENS = {
+  home: { href: "/home", texto: "Home", Icone: IconeHome },
+  jornada: { href: "/jornada", texto: "Jornada", Icone: IconeJornada },
+  abastecimento: { href: "/abastecimento", texto: "Abastecer", Icone: IconeCombustivel },
+  manutencao: { href: "/manutencao", texto: "Manutenção", Icone: IconeManutencao },
+  ocorrencias: { href: "/ocorrencias", texto: "Ocorrências", Icone: IconeOcorrencia },
+  relatorios: { href: "/relatorios", texto: "Relatórios", Icone: IconeRelatorio },
+} as const;
 
 export function BottomNav() {
   const caminho = usePathname();
+  const { ehAdmin, ehSupervisor } = useSessao();
+
+  // Cada perfil vê apenas o que é do seu trabalho.
+  const chaves: (keyof typeof ITENS)[] = ehSupervisor
+    ? ["home", "ocorrencias", "relatorios"]
+    : ehAdmin
+      ? ["home", "ocorrencias", "abastecimento", "manutencao", "relatorios"]
+      : ["home", "jornada", "abastecimento", "manutencao", "relatorios"];
+
   return (
     <nav className="no-print fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <ul className="flex">
-        {itens.map(({ href, texto, Icone }) => {
+        {chaves.map((k) => {
+          const { href, texto, Icone } = ITENS[k];
           const ativo = caminho.startsWith(href);
           return (
             <li key={href} className="flex-1">

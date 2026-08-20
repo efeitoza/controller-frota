@@ -1,4 +1,4 @@
-export type Role = "driver" | "admin";
+export type Role = "driver" | "admin" | "supervisor";
 export type VehicleType = "moto" | "carro";
 export type JourneyStatus = "andamento" | "finalizada";
 
@@ -100,6 +100,46 @@ export interface Attachment {
   record_id: string;
   file_url: string;
   file_type: string | null;
+  created_at?: string;
+}
+
+/* ---------------- Módulo de ocorrências (Supervisão) ---------------- */
+
+export type CatalogKind =
+  | "linha"
+  | "terminal"
+  | "consorciada"
+  | "onibus"
+  | "motorista"
+  | "motivo";
+
+export interface CatalogItem {
+  id: string;
+  kind: CatalogKind;
+  code: string;
+  name: string | null;
+  active: boolean;
+}
+
+export type OccurrenceStatus = "registrada" | "encaminhada" | "arquivada";
+
+export interface Occurrence {
+  id: string;
+  supervisor_id: string;
+  date: string;
+  time: string | null;
+  terminal: string | null;
+  consortium: string | null;
+  line: string | null;
+  bus_code: string | null;
+  driver_code: string | null;
+  driver_name: string | null;
+  position: string | null;
+  reason: string;
+  description: string | null;
+  recurrent: boolean;
+  status: OccurrenceStatus;
+  message: string | null;
   created_at?: string;
 }
 

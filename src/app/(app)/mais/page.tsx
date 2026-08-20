@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AppHeader } from "@/components/AppHeader";
 import { useSessao } from "@/components/SessaoProvider";
-import { Card, Etiqueta } from "@/components/ui";
+import { Campo, Card, Etiqueta, toast } from "@/components/ui";
+import { lerDestinoWhatsApp, salvarDestinoWhatsApp } from "@/lib/ocorrencia";
 import { IconeSair, IconeSeta } from "@/components/icons";
 import { resetarDemo } from "@/lib/demo";
 
@@ -23,7 +25,12 @@ function Linha({ href, texto, desc }: { href: string; texto: string; desc: strin
 }
 
 export default function Mais() {
-  const { sessao, ehAdmin, sair, modoDemo, veiculoAtual } = useSessao();
+  const { sessao, ehAdmin, ehSupervisor, sair, modoDemo, veiculoAtual } = useSessao();
+  const [zap, setZap] = useState("");
+
+  useEffect(() => {
+    setZap(lerDestinoWhatsApp());
+  }, []);
 
   return (
     <>
@@ -56,13 +63,64 @@ export default function Mais() {
 
         <Card titulo="Controles">
           <div className="divide-y divide-slate-100">
-            <Linha href="/mais/epi" texto="EPI" desc="Equipamentos entregues ao condutor" />
-            <Linha href="/mais/veiculos" texto="Veículos" desc="Cadastro e histórico da frota" />
+            {(ehSupervisor || ehAdmin) && (
+              <>
+                <Linha
+                  href="/ocorrencias"
+                  texto="Ocorrências"
+                  desc="Registros disciplinares da supervisão"
+                />
+                <Linha
+                  href="/mais/operacao"
+                  texto="Operação"
+                  desc="Linhas, terminais, veículos, motoristas e motivos"
+                />
+              </>
+            )}
+            {!ehSupervisor && (
+              <>
+                <Linha href="/mais/epi" texto="EPI" desc="Equipamentos entregues ao condutor" />
+                <Linha
+                  href="/mais/veiculos"
+                  texto="Veículos"
+                  desc="Cadastro e histórico da frota"
+                />
+                <Linha href="/jornada" texto="Jornada" desc="Iniciar ou finalizar o dia" />
+              </>
+            )}
             {ehAdmin && (
               <Linha href="/mais/condutores" texto="Condutores" desc="Cadastro da equipe" />
             )}
           </div>
         </Card>
+
+        {(ehSupervisor || ehAdmin) && (
+          <Card titulo="Envio no WhatsApp">
+            <Campo label="Número de destino (opcional)">
+              <input
+                className="campo"
+                value={zap}
+                onChange={(e) => setZap(e.target.value)}
+                placeholder="55819XXXXXXXX"
+                inputMode="numeric"
+              />
+            </Campo>
+            <p className="mt-2 text-[12px] text-ink-muted">
+              Deixe em branco para escolher o grupo na hora do envio. O WhatsApp não permite
+              postar direto em um grupo por link — com o número preenchido, o app abre a conversa
+              daquele contato já com o texto.
+            </p>
+            <button
+              className="btn-claro mt-2"
+              onClick={() => {
+                salvarDestinoWhatsApp(zap.trim());
+                toast("Preferência salva neste aparelho.", "ok");
+              }}
+            >
+              Salvar
+            </button>
+          </Card>
+        )}
 
         {modoDemo && (
           <Card titulo="Modo demonstração">

@@ -10,11 +10,12 @@ import {
   listarEpis,
   listarJornadas,
   listarManutencoes,
+  listarOcorrencias,
 } from "@/lib/api";
-import { brl, dataBR, hoje, kml, mesRotulo, num, periodo } from "@/lib/format";
-import { EpiRecord, FuelRecord, Journey, MaintenanceRecord } from "@/lib/types";
+import { brl, dataBR, hora, hoje, kml, mesRotulo, num, periodo } from "@/lib/format";
+import { EpiRecord, FuelRecord, Journey, MaintenanceRecord, Occurrence } from "@/lib/types";
 
-type Tipo = "todos" | "jornada" | "abastecimento" | "manutencao" | "epi";
+type Tipo = "todos" | "jornada" | "abastecimento" | "manutencao" | "epi" | "ocorrencia";
 
 const PERIODOS = [
   { chave: "hoje", texto: "Hoje" },
@@ -26,8 +27,9 @@ const PERIODOS = [
 ];
 
 export default function Relatorios() {
-  const { sessao, veiculos, condutores, ehAdmin } = useSessao();
+  const { sessao, veiculos, condutores, ehAdmin, ehSupervisor } = useSessao();
   const meuDriverId = sessao?.driver?.id ?? "";
+  const veOcorrencias = ehAdmin || ehSupervisor;
 
   const [chavePeriodo, setChavePeriodo] = useState("mes");
   const [de, setDe] = useState(periodo("mes").de);
@@ -41,6 +43,7 @@ export default function Relatorios() {
   const [manut, setManut] = useState<MaintenanceRecord[]>([]);
   const [jornadas, setJornadas] = useState<Journey[]>([]);
   const [epis, setEpis] = useState<EpiRecord[]>([]);
+  const [ocorrencias, setOcorrencias] = useState<Occurrence[]>([]);
 
   useEffect(() => {
     if (chavePeriodo === "custom") return;
@@ -57,18 +60,26 @@ export default function Relatorios() {
       vehicleId: vehicleId || undefined,
       driverId: ehAdmin ? driverId || undefined : meuDriverId || undefined,
     };
-    const [a, m, j, e] = await Promise.all([
-      listarAbastecimentos(f),
-      listarManutencoes(f),
-      listarJornadas(f),
-      listarEpis({ de, ate, driverId: f.driverId }),
+    const [a, m, j, e, oc] = await Promise.all([
+      ehSupervisor ? Promise.resolve([]) : listarAbastecimentos(f),
+      ehSupervisor ? Promise.resolve([]) : listarManutencoes(f),
+      ehSupervisor ? Promise.resolve([]) : listarJornadas(f),
+      ehSupervisor ? Promise.resolve([]) : listarEpis({ de, ate, driverId: f.driverId }),
+      veOcorrencias
+        ? listarOcorrencias({
+            de,
+            ate,
+            supervisorId: ehAdmin ? undefined : sessao?.user.id,
+          })
+        : Promise.resolve([]),
     ]);
     setFuel(a);
     setManut(m);
     setJornadas(j);
     setEpis(e);
+    setOcorrencias(oc);
     setCarregando(false);
-  }, [de, ate, vehicleId, driverId, ehAdmin, meuDriverId]);
+  }, [de, ate, vehicleId, driverId, ehAdmin, ehSupervisor, veOcorrencias, meuDriverId, sessao]);
 
   useEffect(() => {
     void carregar();
@@ -229,6 +240,24 @@ export default function Relatorios() {
         ])
       );
 
+    if (mostra("ocorrencia"))
+      ocorrencias.forEach((o) =>
+        linhas.push([
+          "Ocorrência",
+          o.date,
+          o.bus_code ?? "",
+          o.driver_code ?? "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          `${o.reason}${o.description ? " - " + o.description.replace(/;/g, ",") : ""}`,
+          "",
+          o.status,
+        ])
+      );
+
     const csv =
       "﻿" + [cab, ...linhas].map((l) => l.map((c) => `"${c}"`).join(";")).join("\n");
     const a = document.createElement("a");
@@ -237,7 +266,9 @@ export default function Relatorios() {
     a.click();
   }
 
-  const mostra = (t: Tipo) => tipo === "todos" || tipo === t;
+  const mostra = (t: Tipo) =>
+    (tipo === "todos" || tipo === t) &&
+    (t === "ocorrencia" ? veOcorrencias : !ehSupervisor);
 
   return (
     <>
@@ -308,6 +339,7 @@ export default function Relatorios() {
                 <option value="abastecimento">Abastecimento</option>
                 <option value="manutencao">Manutenção</option>
                 <option value="epi">EPI</option>
+                {veOcorrencias && <option value="ocorrencia">Ocorrência</option>}
               </select>
             </Campo>
             {ehAdmin && (
@@ -345,7 +377,29 @@ export default function Relatorios() {
           <Carregando />
         ) : (
           <>
+            {/* -------- indicadores de ocorrências -------- */}
+            {veOcorrencias && (
+              <Card titulo="Ocorrências no período">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Stat rotulo="Registradas" valor={ocorrencias.length} destaque />
+                  <Stat
+                    rotulo="Motoristas envolvidos"
+                    valor={new Set(ocorrencias.map((o) => o.driver_code).filter(Boolean)).size}
+                  />
+                  <Stat
+                    rotulo="Encaminhadas"
+                    valor={ocorrencias.filter((o) => o.status === "encaminhada").length}
+                  />
+                  <Stat
+                    rotulo="Linhas envolvidas"
+                    valor={new Set(ocorrencias.map((o) => o.line).filter(Boolean)).size}
+                  />
+                </div>
+              </Card>
+            )}
+
             {/* -------- indicadores -------- */}
+            {!ehSupervisor && (
             <Card titulo="Indicadores">
               <div className="grid grid-cols-2 gap-2.5">
                 <Stat
@@ -362,8 +416,10 @@ export default function Relatorios() {
                 <Stat rotulo="Custo total" valor={brl(ind.total)} destaque />
               </div>
             </Card>
+            )}
 
             {/* -------- gráficos -------- */}
+            {!ehSupervisor && (
             <Card titulo="Evolução">
               <div className="space-y-5">
                 <GraficoLinha titulo="Consumo médio por mês" dados={series.consumo} unidade=" km/L" />
@@ -385,6 +441,41 @@ export default function Relatorios() {
                 />
               </div>
             </Card>
+            )}
+
+            {/* -------- ocorrências -------- */}
+            {mostra("ocorrencia") && (
+              <Card titulo={`Ocorrências (${ocorrencias.length})`}>
+                {ocorrencias.length === 0 ? (
+                  <Vazio texto="Nenhuma ocorrência no período." />
+                ) : (
+                  <ul className="divide-y divide-slate-100">
+                    {ocorrencias.map((o) => (
+                      <li key={o.id} className="py-2.5">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-[13.5px] font-medium">{o.reason}</p>
+                            <p className="text-[12px] text-ink-muted">
+                              {dataBR(o.date)} · {hora(o.time)} · {o.terminal ?? "—"} · linha{" "}
+                              {o.line ?? "—"}
+                            </p>
+                            <p className="text-[12px] text-ink-muted">
+                              veículo {o.bus_code ?? "—"} · motorista {o.driver_code ?? "—"}
+                            </p>
+                          </div>
+                          <div className="flex flex-none flex-col items-end gap-1">
+                            <Etiqueta
+                              texto={o.status}
+                              cor={o.status === "encaminhada" ? "verde" : "azul"}
+                            />
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            )}
 
             {/* -------- tabela de abastecimento -------- */}
             {mostra("abastecimento") && (

@@ -77,6 +77,21 @@ export const IconeCamera = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const IconeOcorrencia = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M10.6 3.9 2.9 17.3A1.6 1.6 0 0 0 4.3 19.7h15.4a1.6 1.6 0 0 0 1.4-2.4L13.4 3.9a1.6 1.6 0 0 0-2.8 0z" />
+    <path d="M12 9v4" />
+    <path d="M12 16.5h.01" />
+  </svg>
+);
+
+export const IconeWhatsApp = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M3.5 20.5l1.3-4.1A8 8 0 1 1 8 19.4l-4.5 1.1z" />
+    <path d="M9 9.2c.2 1 .8 2 1.6 2.8.8.8 1.8 1.4 2.8 1.6l.9-1.2 1.9.8-.4 1.6c-1.9.3-4-.7-5.5-2.2S8 9.2 8.3 7.3l1.6-.4.8 1.9z" />
+  </svg>
+);
+
 export const IconeSair = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}>
     <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />

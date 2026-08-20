@@ -13,6 +13,7 @@ interface Ctx {
   veiculos: Vehicle[];
   condutores: Driver[];
   ehAdmin: boolean;
+  ehSupervisor: boolean;
   veiculoAtual: Vehicle | null;
   recarregar: () => Promise<void>;
   sair: () => Promise<void>;
@@ -25,6 +26,7 @@ const SessaoCtx = createContext<Ctx>({
   veiculos: [],
   condutores: [],
   ehAdmin: false,
+  ehSupervisor: false,
   veiculoAtual: null,
   recarregar: async () => {},
   sair: async () => {},
@@ -79,6 +81,7 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
       veiculos,
       condutores,
       ehAdmin: sessao?.user.role === "admin",
+      ehSupervisor: sessao?.user.role === "supervisor",
       veiculoAtual,
       recarregar,
       sair,

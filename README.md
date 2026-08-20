@@ -21,6 +21,7 @@ Abra `http://localhost:3000` e entre com:
 |---|---|
 | `antonio.campos` | Condutor |
 | `marina.souza` | Administrador |
+| `jose.andrade` | Supervisão (ocorrências) |
 
 Qualquer senha funciona no modo demonstração.
 
@@ -37,6 +38,8 @@ Em supabase.com, crie um projeto (região São Paulo). Guarde a senha do banco.
 **SQL Editor › New query** → cole todo o conteúdo de `supabase/schema.sql` → **Run**.
 
 Isso cria: `users`, `drivers`, `vehicles`, `journeys`, `fuel_records`, `maintenance_records`, `epi_records`, `attachments`, as regras de acesso (RLS) e o bucket `attachments` do storage.
+
+Em seguida, rode também `supabase/schema_ocorrencias.sql` — ele acrescenta o módulo de ocorrências (perfil Supervisão): tabelas `occurrences` e `operation_catalog`, o papel `supervisor` e as permissões desse módulo. É aditivo e pode ser rodado depois, sem mexer no que já existe.
 
 ### 3. Desligar a confirmação de e-mail
 
@@ -106,16 +109,29 @@ src/
       abastecimento/       registro com cálculo automático de consumo
       manutencao/          registro de serviços
       relatorios/          filtros, indicadores, gráficos e exportação
-      mais/                perfil, EPI, veículos, condutores
+      ocorrencias/         registro disciplinar (perfil Supervisão)
+      mais/                perfil, EPI, veículos, condutores, operação
   components/              UI, navegação, gráficos, anexos
   lib/
     api.ts                 camada de dados (Supabase ou modo demonstração)
     alertas.ts             regras de consumo anormal e pendências
+    ocorrencia.ts          texto do WhatsApp e utilidades do módulo
     demo.ts                dados de exemplo
     format.ts              formatação pt-BR e períodos
     types.ts               tipos do domínio
-supabase/schema.sql        banco + RLS + storage
+supabase/schema.sql              banco + RLS + storage
+supabase/schema_ocorrencias.sql  módulo de ocorrências (rodar depois)
 ```
+
+## Módulo de Ocorrências (perfil Supervisão)
+
+Voltado ao supervisor de operação, que hoje registra ocorrências disciplinares por mensagem no WhatsApp. O app estrutura os mesmos campos, guarda no banco e devolve o texto pronto para encaminhar.
+
+O supervisor preenche data, horário, terminal, consorciada, linha, veículo, matrícula do motorista, posição, motivo e descrição. Os códigos aceitam digitação livre com sugestões do cadastro — um valor novo é memorizado e vira sugestão na próxima vez.
+
+A prévia da mensagem é montada enquanto se digita, no mesmo formato usado no grupo. Depois de salvar, há botão para copiar o texto e para abrir o WhatsApp já preenchido — o destino é escolhido na hora, porque o WhatsApp não permite postar direto em um grupo por link. Em **Mais › Envio no WhatsApp** dá para fixar um número de destino.
+
+Cadastros de linhas, terminais, consorciadas, veículos, motoristas e motivos ficam em **Mais › Operação**, com importação em lote (colar da planilha ou carregar `.csv`/`.txt`, um por linha, no formato `codigo` ou `codigo;nome`).
 
 ## Regras de cálculo
 
@@ -137,12 +153,14 @@ O modelo pressupõe tanque completo a cada abastecimento.
 
 ## Permissões
 
-| | Condutor | Administrador |
-|---|---|---|
-| Jornada, abastecimento, manutenção, EPI | próprios | todos |
-| Anexar comprovantes | sim | sim |
-| Cadastrar veículos e condutores | não | sim |
-| Relatórios de toda a frota | não | sim |
+| | Condutor | Supervisão | Administrador |
+|---|---|---|---|
+| Jornada, abastecimento, manutenção, EPI | próprios | não vê | todos |
+| Anexar comprovantes | sim | — | sim |
+| Ocorrências | não vê | as próprias | todas |
+| Cadastros da operação | não | sim | sim |
+| Cadastrar veículos e condutores | não | não | sim |
+| Relatórios de toda a frota | não | só ocorrências | sim |
 
 As regras valem no banco, via RLS — não dependem da interface.
 

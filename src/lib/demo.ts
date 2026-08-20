@@ -1,13 +1,15 @@
 "use client";
 
 import {
+  AppUser,
+  CatalogItem,
   Driver,
   EpiRecord,
   FuelRecord,
   Journey,
   MaintenanceRecord,
+  Occurrence,
   Vehicle,
-  AppUser,
 } from "./types";
 
 /**
@@ -25,6 +27,8 @@ export interface DemoDB {
   fuel: FuelRecord[];
   maintenance: MaintenanceRecord[];
   epi: EpiRecord[];
+  occurrences: Occurrence[];
+  catalog: CatalogItem[];
   sessao: string | null; // user_id
 }
 
@@ -92,6 +96,12 @@ function semente(): DemoDB {
   const users: AppUser[] = [
     { id: "u-001", email: "antonio.campos@empresa.com.br", name: "Antonio Campos", role: "driver" },
     { id: "u-002", email: "marina.souza@empresa.com.br", name: "Marina Souza", role: "admin" },
+    {
+      id: "u-003",
+      email: "jose.andrade@empresa.com.br",
+      name: "José Andrade",
+      role: "supervisor",
+    },
   ];
 
   // Abastecimentos da moto nos últimos ~5 meses (média ~43 km/L, um fora do padrão)
@@ -210,7 +220,108 @@ function semente(): DemoDB {
     },
   ];
 
-  return { users, drivers, vehicles, journeys, fuel, maintenance, epi, sessao: null };
+  /* ------------------ módulo de ocorrências ------------------ */
+  const cat = (kind: CatalogItem["kind"], codes: string[]): CatalogItem[] =>
+    codes.map((code, i) => ({
+      id: `c-${kind}-${i}`,
+      kind,
+      code,
+      name: null,
+      active: true,
+    }));
+
+  const catalog: CatalogItem[] = [
+    ...cat("terminal", ["TI-PE-15", "TI Barro", "TI Joana Bezerra", "TI Cajueiro Seco"]),
+    ...cat("consorciada", ["CDA", "Recife", "Metropolitano Norte", "Metropolitano Sul"]),
+    ...cat("linha", ["1966", "1970", "2450", "195", "042"]),
+    ...cat("onibus", ["1386", "1402", "1177", "2033"]),
+    ...cat("motorista", ["1438", "1521", "0987", "1103"]),
+    ...cat("motivo", [
+      "Acoplou fora da parada",
+      "Ultrapassou o ponto",
+      "Excesso de velocidade",
+      "Atraso na partida",
+      "Uso de celular na direção",
+      "Uniforme/apresentação",
+      "Tratamento inadequado ao passageiro",
+      "Não parou no ponto",
+      "Outro",
+    ]),
+  ];
+
+  const occurrences: Occurrence[] = [
+    {
+      id: "o-001",
+      supervisor_id: "u-003",
+      date: dias(2),
+      time: "13:16",
+      terminal: "TI-PE-15",
+      consortium: "CDA",
+      line: "1966",
+      bus_code: "1386",
+      driver_code: "1438",
+      driver_name: null,
+      position: "_°",
+      reason: "Acoplou fora da parada",
+      description:
+        "O condutor citado acima viu que já havia um veículo acoplado na parada 4A, mas mesmo assim parou atrás do veículo, causando tumulto entre os passageiros. O mesmo é reincidente, onde já foi notificado pela fiscalização do Grande Recife pela mesma infração.",
+      recurrent: false,
+      status: "encaminhada",
+      message: null,
+      created_at: dias(2),
+    },
+    {
+      id: "o-002",
+      supervisor_id: "u-003",
+      date: dias(9),
+      time: "07:42",
+      terminal: "TI-PE-15",
+      consortium: "CDA",
+      line: "1966",
+      bus_code: "1386",
+      driver_code: "1438",
+      driver_name: null,
+      position: "2°",
+      reason: "Atraso na partida",
+      description: "Saída do terminal com 11 minutos de atraso, sem justificativa apresentada.",
+      recurrent: false,
+      status: "registrada",
+      message: null,
+      created_at: dias(9),
+    },
+    {
+      id: "o-003",
+      supervisor_id: "u-003",
+      date: dias(21),
+      time: "17:05",
+      terminal: "TI Barro",
+      consortium: "Recife",
+      line: "2450",
+      bus_code: "1402",
+      driver_code: "1521",
+      driver_name: null,
+      position: "1°",
+      reason: "Uniforme/apresentação",
+      description: "Condutor em serviço sem o uniforme padrão da consorciada.",
+      recurrent: false,
+      status: "registrada",
+      message: null,
+      created_at: dias(21),
+    },
+  ];
+
+  return {
+    users,
+    drivers,
+    vehicles,
+    journeys,
+    fuel,
+    maintenance,
+    epi,
+    occurrences,
+    catalog,
+    sessao: null,
+  };
 }
 
 let cache: DemoDB | null = null;
