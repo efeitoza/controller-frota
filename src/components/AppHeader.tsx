@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSessao } from "./SessaoProvider";
 import { IconeMais } from "./icons";
+import { moduloDoCaminho } from "@/lib/modulos";
 
 export function AppHeader({ titulo, voltar }: { titulo?: string; voltar?: string }) {
   const { sessao, veiculoAtual, ehAdmin, ehSupervisor } = useSessao();
+  const caminho = usePathname();
+  const modulo = moduloDoCaminho(caminho);
 
   const data = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -33,14 +37,26 @@ export function AppHeader({ titulo, voltar }: { titulo?: string; voltar?: string
         </div>
       </div>
 
-      {titulo ? (
+      {modulo ? (
         <>
           {voltar && (
-            <Link href={voltar} className="mb-1 inline-block text-[13px] text-brand-200">
+            <Link href={voltar} className="mb-2 inline-block text-[13px] text-brand-200">
               ‹ voltar
             </Link>
           )}
-          <h1 className="text-[26px] font-semibold leading-tight">{titulo}</h1>
+          <div className="flex items-start gap-3.5">
+            <span
+              className={`flex h-12 w-12 flex-none items-center justify-center rounded-2xl ${modulo.circulo}`}
+            >
+              <modulo.Icone className="h-6 w-6" strokeWidth={1.8} />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-[23px] font-semibold leading-tight">
+                {titulo ?? modulo.titulo}
+              </h1>
+              <p className="mt-1 text-[13px] leading-snug text-brand-200">{modulo.frase}</p>
+            </div>
+          </div>
         </>
       ) : (
         <>
