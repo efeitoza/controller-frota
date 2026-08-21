@@ -89,7 +89,14 @@ export default function Mais() {
               </>
             )}
             {ehAdmin && (
-              <Linha href="/mais/condutores" texto="Condutores" desc="Cadastro da equipe" />
+              <>
+                <Linha href="/mais/condutores" texto="Condutores" desc="Cadastro da equipe" />
+                <Linha
+                  href="/mais/acessos"
+                  texto="Acessos"
+                  desc="Criar usuário, definir perfil e redefinir senha"
+                />
+              </>
             )}
           </div>
         </Card>

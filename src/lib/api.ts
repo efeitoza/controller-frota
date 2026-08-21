@@ -5,6 +5,7 @@ import { emailDoLogin, supabase, temSupabase } from "./supabase";
 import {
   AppUser,
   CatalogItem,
+  Role,
   CatalogKind,
   Driver,
   EpiRecord,
@@ -59,15 +60,67 @@ export async function entrar(login: string, senha: string): Promise<Sessao> {
   return s;
 }
 
-export async function cadastrar(login: string, senha: string, nome: string) {
-  if (!temSupabase) return;
-  const sb = supabase();
-  const { error } = await sb.auth.signUp({
-    email: emailDoLogin(login),
-    password: senha,
-    options: { data: { name: nome, login, role: "driver" } },
+/**
+ * Acessos são criados apenas pelo gestor (Mais › Acessos), que chama as rotas
+ * /api/acessos no servidor. Não existe autocadastro na tela de login.
+ */
+async function tokenAtual(): Promise<string> {
+  const { data } = await supabase().auth.getSession();
+  return data.session?.access_token ?? "";
+}
+
+export async function criarAcesso(dados: {
+  login: string;
+  senha: string;
+  nome: string;
+  papel: Role;
+  matricula?: string | null;
+  telefone?: string | null;
+}): Promise<void> {
+  if (!temSupabase) {
+    // modo demonstração: cria só na memória do navegador
+    const db = demoDB();
+    const login = dados.login.trim().toLowerCase();
+    if (db.users.some((u) => u.email.split("@")[0] === login))
+      throw new Error("Já existe um acesso com esse login.");
+    const id = novoId("u");
+    db.users.push({ id, email: `${login}@demo.local`, name: dados.nome || login, role: dados.papel });
+    if (dados.papel === "driver")
+      db.drivers.push({
+        id: novoId("d"),
+        user_id: id,
+        name: dados.nome || login,
+        registration: dados.matricula ?? null,
+        phone: dados.telefone ?? null,
+        email: `${login}@demo.local`,
+        status: "ativo",
+        primary_vehicle_id: null,
+      });
+    salvarDemo();
+    return;
+  }
+
+  const r = await fetch("/api/acessos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${await tokenAtual()}` },
+    body: JSON.stringify(dados),
   });
-  erro(error);
+  const corpo = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(corpo?.erro ?? "Não foi possível criar o acesso.");
+}
+
+export async function redefinirSenha(userId: string, senha: string): Promise<void> {
+  if (!temSupabase) {
+    if (senha.length < 6) throw new Error("A senha precisa ter ao menos 6 caracteres.");
+    return; // na demonstração qualquer senha entra, não há o que guardar
+  }
+  const r = await fetch("/api/acessos/senha", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${await tokenAtual()}` },
+    body: JSON.stringify({ userId, senha }),
+  });
+  const corpo = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(corpo?.erro ?? "Não foi possível redefinir a senha.");
 }
 
 export async function sair() {

@@ -41,9 +41,12 @@ Isso cria: `users`, `drivers`, `vehicles`, `journeys`, `fuel_records`, `maintena
 
 Em seguida, rode também `supabase/schema_ocorrencias.sql` — ele acrescenta o módulo de ocorrências (perfil Supervisão): tabelas `occurrences` e `operation_catalog`, o papel `supervisor` e as permissões desse módulo. É aditivo e pode ser rodado depois, sem mexer no que já existe.
 
-### 3. Desligar a confirmação de e-mail
+### 3. Fechar o autocadastro e desligar a confirmação de e-mail
 
-Como o condutor entra por **login** (ex.: `antonio.campos`), o app monta o e-mail juntando o login com o domínio configurado. Em **Authentication › Providers › Email**, desligue **Confirm email**.
+Em **Authentication › Providers › Email**:
+
+- desligue **Confirm email** — o e-mail é montado a partir do login (`antonio.campos` → `antonio.campos@empresa.com.br`) e não é uma caixa real;
+- desligue **Allow new users to sign up** — quem cria acesso é o gestor, dentro do app.
 
 ### 4. Variáveis de ambiente
 
@@ -53,26 +56,27 @@ Copie `.env.example` para `.env.local` e preencha com os valores de **Project Se
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
 NEXT_PUBLIC_LOGIN_DOMAIN=empresa.com.br
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...   # secreta, só no servidor
 ```
 
-A `anon key` pode ficar no cliente — quem protege os dados é o RLS.
+A `anon key` pode ficar no cliente — quem protege os dados é o RLS. Já a **`SUPABASE_SERVICE_ROLE_KEY` é secreta**: fica só no servidor (sem prefixo `NEXT_PUBLIC`), e é o que permite ao gestor criar usuários e redefinir senhas pelas rotas `/api/acessos`. Nunca a coloque no cliente nem no repositório.
 
-### 5. Primeiro usuário e administrador
+### 5. Primeiro gestor
 
-Crie a conta pela própria tela de login ("Criar conta de condutor"). Depois, no SQL Editor:
+Como não há autocadastro, o primeiro usuário nasce no painel: **Authentication › Users › Add user**, com e-mail `seu.login@empresa.com.br`, uma senha e a opção *Auto Confirm* marcada. Depois, no SQL Editor:
 
 ```sql
 update public.users set role = 'admin' where email = 'seu.login@empresa.com.br';
 ```
 
-O administrador vê os registros de todos os condutores, cadastra veículos e condutores e filtra relatórios por condutor.
+Daí em diante, todos os outros acessos são criados por ele em **Mais › Acessos**.
 
 ---
 
 ## Publicando no Replit
 
 1. No Replit: **Create Repl › Import from GitHub** (ou faça upload da pasta).
-2. Em **Tools › Secrets**, adicione `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `NEXT_PUBLIC_LOGIN_DOMAIN`.
+2. Em **Tools › Secrets**, adicione `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_LOGIN_DOMAIN` e `SUPABASE_SERVICE_ROLE_KEY`.
 3. Clique em **Run** — o `.replit` do repositório já aponta para `npm run dev` na porta 3000.
 4. Para publicar de verdade, use **Deploy** (o `.replit` já traz `build`/`start` configurados como autoscale).
 
@@ -110,7 +114,8 @@ src/
       manutencao/          registro de serviços
       relatorios/          filtros, indicadores, gráficos e exportação
       ocorrencias/         registro disciplinar (perfil Supervisão)
-      mais/                perfil, EPI, veículos, condutores, operação
+      mais/                perfil, EPI, veículos, condutores, operação, acessos
+    api/acessos/         rotas de servidor: criar usuário e redefinir senha
   components/              UI, navegação, gráficos, anexos
   lib/
     api.ts                 camada de dados (Supabase ou modo demonstração)
@@ -118,6 +123,8 @@ src/
     ocorrencia.ts          texto do WhatsApp e utilidades do módulo
     demo.ts                dados de exemplo
     format.ts              formatação pt-BR e períodos
+    modulos.tsx            cor, ícone e frase de cada tela
+    servidor.ts            cliente admin do Supabase (somente servidor)
     types.ts               tipos do domínio
 supabase/schema.sql              banco + RLS + storage
 supabase/schema_ocorrencias.sql  módulo de ocorrências (rodar depois)
@@ -151,6 +158,16 @@ O modelo pressupõe tanque completo a cada abastecimento.
 
 **Custo por km** = (combustível + manutenção) ÷ km do período.
 
+## Acessos e senhas
+
+Não existe autocadastro. O gestor abre **Mais › Acessos** e cria cada usuário informando login, nome, perfil (condutor, supervisão ou gestor) e uma senha inicial — que ele entrega à pessoa. Criar um acesso de condutor já gera a ficha dele em Condutores, com matrícula e telefone.
+
+Se alguém esquecer a senha, o gestor redefine na mesma tela (botão **senha** ao lado do usuário). O usuário não troca a própria senha e não há recuperação por e-mail, já que o endereço é montado a partir do login.
+
+Por baixo, as rotas `/api/acessos` e `/api/acessos/senha` rodam no servidor, conferem pelo token que quem chamou é mesmo um gestor e só então usam a service role key do Supabase.
+
+O primeiro gestor precisa ser criado à mão, já que ainda não há ninguém para criá-lo: em **Authentication › Users › Add user** no painel do Supabase (marque *Auto Confirm*), e depois `update public.users set role = 'admin' where email = '...';`.
+
 ## Permissões
 
 | | Condutor | Supervisão | Administrador |
@@ -161,6 +178,7 @@ O modelo pressupõe tanque completo a cada abastecimento.
 | Cadastros da operação | não | sim | sim |
 | Cadastrar veículos e condutores | não | não | sim |
 | Relatórios de toda a frota | não | só ocorrências | sim |
+| Criar acesso e redefinir senha | não | não | sim |
 
 As regras valem no banco, via RLS — não dependem da interface.
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { cadastrar, entrar } from "@/lib/api";
+import { entrar } from "@/lib/api";
 import { temSupabase } from "@/lib/supabase";
 import { useSessao } from "@/components/SessaoProvider";
 import { Campo, toast } from "@/components/ui";
@@ -10,8 +10,6 @@ import { Campo, toast } from "@/components/ui";
 export default function Login() {
   const [login, setLogin] = useState("");
   const [senha, setSenha] = useState("");
-  const [nome, setNome] = useState("");
-  const [criando, setCriando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const { sessao, carregando, recarregar } = useSessao();
   const router = useRouter();
@@ -24,16 +22,9 @@ export default function Login() {
     e.preventDefault();
     setEnviando(true);
     try {
-      if (criando) {
-        if (senha.length < 6) throw new Error("A senha precisa ter ao menos 6 caracteres.");
-        await cadastrar(login, senha, nome);
-        toast("Conta criada. Faça o login.", "ok");
-        setCriando(false);
-      } else {
-        await entrar(login, senha);
-        await recarregar();
-        router.replace("/home");
-      }
+      await entrar(login, senha);
+      await recarregar();
+      router.replace("/home");
     } catch (err) {
       toast((err as Error).message, "erro");
     } finally {
@@ -73,29 +64,14 @@ export default function Login() {
             required={temSupabase}
           />
         </Campo>
-        {criando && (
-          <Campo label="Nome completo">
-            <input
-              className="campo"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Antonio Campos"
-            />
-          </Campo>
-        )}
         <button className="btn" disabled={enviando}>
-          {enviando ? "Aguarde..." : criando ? "Criar conta" : "Entrar"}
+          {enviando ? "Aguarde..." : "Entrar"}
         </button>
-        {temSupabase && (
-          <button
-            type="button"
-            className="btn-claro"
-            onClick={() => setCriando((v) => !v)}
-          >
-            {criando ? "Já tenho conta" : "Criar conta de condutor"}
-          </button>
-        )}
       </form>
+
+      <p className="mt-4 text-center text-[12.5px] text-brand-200">
+        Não tem acesso? Peça ao gestor da frota — só ele cria e redefine senhas.
+      </p>
 
       {!temSupabase && (
         <p className="mt-5 rounded-xl bg-white/10 p-3 text-center text-[12.5px] leading-relaxed text-brand-100">
