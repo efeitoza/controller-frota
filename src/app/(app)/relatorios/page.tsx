@@ -314,6 +314,7 @@ export default function Relatorios() {
           )}
 
           <div className="grid grid-cols-2 gap-3">
+            {!ehSupervisor && (
             <Campo label="Veículo">
               <select
                 className="campo"
@@ -328,6 +329,8 @@ export default function Relatorios() {
                 ))}
               </select>
             </Campo>
+            )}
+            {!ehSupervisor && (
             <Campo label="Tipo">
               <select
                 className="campo"
@@ -342,6 +345,7 @@ export default function Relatorios() {
                 {veOcorrencias && <option value="ocorrencia">Ocorrência</option>}
               </select>
             </Campo>
+            )}
             {ehAdmin && (
               <Campo label="Condutor" className="col-span-2">
                 <select
