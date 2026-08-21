@@ -5,7 +5,7 @@ import { useSessao } from "./SessaoProvider";
 import { IconeMais } from "./icons";
 
 export function AppHeader({ titulo, voltar }: { titulo?: string; voltar?: string }) {
-  const { sessao, veiculoAtual, ehAdmin } = useSessao();
+  const { sessao, veiculoAtual, ehAdmin, ehSupervisor } = useSessao();
   const data = new Date().toLocaleDateString("pt-BR", {
     weekday: "short",
     day: "2-digit",
@@ -26,16 +26,19 @@ export function AppHeader({ titulo, voltar }: { titulo?: string; voltar?: string
           <h1 className="truncate text-[19px] font-semibold leading-tight">
             {titulo ?? sessao?.user.name ?? "Condutor"}
           </h1>
-          {!titulo && veiculoAtual && (
+          {!titulo && veiculoAtual && !ehSupervisor && (
             <p className="mt-0.5 truncate text-[13px] text-brand-100">
               {veiculoAtual.name} · {veiculoAtual.plate}
             </p>
           )}
+          {!titulo && ehSupervisor && (
+            <p className="mt-0.5 truncate text-[13px] text-brand-100">Supervisão de operação</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
-          {ehAdmin && (
+          {(ehAdmin || ehSupervisor) && (
             <span className="rounded-full bg-white/15 px-2.5 py-1 text-[10.5px] font-semibold">
-              ADMIN
+              {ehAdmin ? "ADMIN" : "SUPERVISÃO"}
             </span>
           )}
           <Link
