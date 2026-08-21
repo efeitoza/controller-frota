@@ -328,16 +328,38 @@ let cache: DemoDB | null = null;
 
 export function demoDB(): DemoDB {
   if (cache) return cache;
+  const base = semente();
   try {
     const bruto = localStorage.getItem(CHAVE);
     if (bruto) {
-      cache = JSON.parse(bruto) as DemoDB;
+      const salvo = JSON.parse(bruto) as Partial<DemoDB>;
+      // O que estiver guardado de uma versão anterior é completado com a
+      // semente atual — assim uma coleção nova (ocorrências, catálogo) não
+      // chega como undefined e derruba a tela.
+      const lista = <T,>(a: T[] | undefined, padrao: T[]) => (a && a.length ? a : padrao);
+      const usuarios = [...(salvo.users ?? [])];
+      base.users.forEach((u) => {
+        if (!usuarios.some((x) => x.id === u.id)) usuarios.push(u);
+      });
+      cache = {
+        users: usuarios,
+        drivers: lista(salvo.drivers, base.drivers),
+        vehicles: lista(salvo.vehicles, base.vehicles),
+        journeys: salvo.journeys ?? base.journeys,
+        fuel: salvo.fuel ?? base.fuel,
+        maintenance: salvo.maintenance ?? base.maintenance,
+        epi: salvo.epi ?? base.epi,
+        occurrences: salvo.occurrences ?? base.occurrences,
+        catalog: lista(salvo.catalog, base.catalog),
+        sessao: salvo.sessao ?? null,
+      };
+      salvarDemo();
       return cache;
     }
   } catch {
-    /* storage indisponível — segue em memória */
+    /* storage indisponível ou conteúdo inválido — segue com a semente */
   }
-  cache = semente();
+  cache = base;
   salvarDemo();
   return cache;
 }
