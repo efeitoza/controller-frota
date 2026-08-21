@@ -36,9 +36,9 @@ export function Card({
   return (
     <section className={`card ${className}`}>
       {(titulo || acao) && (
-        <header className="mb-3 flex items-center justify-between gap-3">
+        <header className="mb-4 flex items-center justify-between gap-3">
           {typeof titulo === "string" ? (
-            <h2 className="text-[15px] font-semibold text-ink">{titulo}</h2>
+            <h2 className="text-[17px] font-semibold text-ink">{titulo}</h2>
           ) : (
             titulo
           )}
@@ -80,16 +80,16 @@ export function Stat({
 }) {
   return (
     <div
-      className={`rounded-xl p-3 ${
-        destaque ? "bg-brand-700 text-white" : "bg-slate-50 text-ink"
+      className={`rounded-2xl p-3.5 ${
+        destaque ? "bg-brand-900 text-white" : "border border-slate-100 bg-slate-50/70 text-ink"
       }`}
     >
-      <div className={`text-[11.5px] ${destaque ? "text-brand-100" : "text-ink-soft"}`}>
+      <div className={`text-[11.5px] ${destaque ? "text-brand-200" : "text-ink-soft"}`}>
         {rotulo}
       </div>
       <div className="mt-0.5 text-[19px] font-semibold leading-tight">{valor}</div>
       {sub && (
-        <div className={`text-[11.5px] ${destaque ? "text-brand-100" : "text-ink-muted"}`}>
+        <div className={`text-[11.5px] ${destaque ? "text-brand-200" : "text-ink-muted"}`}>
           {sub}
         </div>
       )}

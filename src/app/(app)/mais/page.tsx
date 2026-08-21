@@ -35,7 +35,7 @@ export default function Mais() {
   return (
     <>
       <AppHeader titulo="Mais" voltar="/home" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         <Card titulo="Perfil">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-[17px] font-bold text-brand-800">

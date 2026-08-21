@@ -88,7 +88,7 @@ export default function Operacao() {
   return (
     <>
       <AppHeader titulo="Operação" voltar="/mais" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         <Card titulo="Cadastros usados nas ocorrências">
           <p className="mb-3 text-[13px] text-ink-soft">
             Estes valores viram sugestões no formulário. O supervisor continua podendo digitar um
@@ -100,7 +100,7 @@ export default function Operacao() {
                 key={t.chave}
                 onClick={() => setTipo(t.chave)}
                 className={`chip ${
-                  tipo === t.chave ? "bg-brand-700 text-white" : "bg-slate-100 text-ink-soft"
+                  tipo === t.chave ? "bg-brand-900 text-white" : "bg-slate-100 text-ink-soft"
                 }`}
               >
                 {t.texto}

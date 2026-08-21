@@ -39,12 +39,12 @@ export default function Condutores() {
   return (
     <>
       <AppHeader titulo="Condutores" voltar="/mais" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         <Card
           titulo={novo ? "Novo condutor" : `Equipe (${condutores.length})`}
           acao={
             <button
-              className="text-[13px] font-semibold text-brand-700"
+              className="text-[13px] font-semibold text-brand-900"
               onClick={() => setNovo((v) => !v)}
             >
               {novo ? "cancelar" : "+ adicionar"}

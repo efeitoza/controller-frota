@@ -6,17 +6,22 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: "#eff5ff",
-          100: "#dbe7fe",
-          200: "#bfd5fe",
-          300: "#93b8fd",
-          400: "#6091fa",
-          500: "#3b6bf6",
-          600: "#254deb",
-          700: "#1d3cd8",
-          800: "#1e34af",
-          900: "#1e328a",
-          950: "#172154",
+          50: "#f3f6fa",
+          100: "#e5eaf2",
+          200: "#c8d4e4",
+          300: "#9db1cc",
+          400: "#6d88ac",
+          500: "#4b688f",
+          600: "#365072",
+          700: "#27405c",
+          800: "#1b3049",
+          900: "#132a45",
+          950: "#0b1a2c",
+        },
+        ouro: {
+          300: "#e2c073",
+          400: "#d3a44a",
+          500: "#b98a31",
         },
         ink: {
           DEFAULT: "#0f172a",
@@ -25,7 +30,7 @@ const config: Config = {
         },
       },
       boxShadow: {
-        card: "0 1px 2px rgba(15,23,42,.06), 0 8px 24px -12px rgba(15,23,42,.18)",
+        card: "0 1px 2px rgba(19,42,69,.04), 0 10px 30px -22px rgba(19,42,69,.35)",
       },
       borderRadius: {
         xl2: "1.25rem",

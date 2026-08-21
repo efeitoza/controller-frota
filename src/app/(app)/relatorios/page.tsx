@@ -273,7 +273,7 @@ export default function Relatorios() {
   return (
     <>
       <AppHeader titulo="Relatórios" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         {/* -------- filtros -------- */}
         <Card titulo="Filtros" className="no-print">
           <div className="mb-3 flex flex-wrap gap-1.5">
@@ -283,7 +283,7 @@ export default function Relatorios() {
                 onClick={() => setChavePeriodo(p.chave)}
                 className={`chip ${
                   chavePeriodo === p.chave
-                    ? "bg-brand-700 text-white"
+                    ? "bg-brand-900 text-white"
                     : "bg-slate-100 text-ink-soft"
                 }`}
               >
@@ -493,6 +493,7 @@ export default function Relatorios() {
                         <tr className="border-b border-slate-200">
                           <th className="py-2 pr-2">Data</th>
                           <th className="py-2 pr-2">Placa</th>
+                          {ehAdmin && <th className="py-2 pr-2">Condutor</th>}
                           <th className="py-2 pr-2 text-right">Km</th>
                           <th className="py-2 pr-2 text-right">Percorrido</th>
                           <th className="py-2 pr-2 text-right">Litros</th>
@@ -507,6 +508,11 @@ export default function Relatorios() {
                           <tr key={r.id}>
                             <td className="py-2 pr-2 whitespace-nowrap">{dataBR(r.date)}</td>
                             <td className="py-2 pr-2 whitespace-nowrap">{nomeVeiculo(r.vehicle_id)}</td>
+                            {ehAdmin && (
+                              <td className="py-2 pr-2 whitespace-nowrap">
+                                {nomeCondutor(r.driver_id)}
+                              </td>
+                            )}
                             <td className="py-2 pr-2 text-right">{num(r.km)}</td>
                             <td className="py-2 pr-2 text-right">{num(r.distance)}</td>
                             <td className="py-2 pr-2 text-right">{num(r.liters, 2)}</td>
@@ -524,7 +530,7 @@ export default function Relatorios() {
                                     href={r.receipt_url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="font-semibold text-brand-700"
+                                    className="font-semibold text-brand-900"
                                   >
                                     ver
                                   </a>
@@ -559,7 +565,7 @@ export default function Relatorios() {
                             {nomeCondutor(j.driver_id)} · {num(j.start_km)} → {num(j.end_km)}
                           </p>
                         </div>
-                        <span className="text-[13.5px] font-semibold text-brand-700">
+                        <span className="text-[13.5px] font-semibold text-brand-900">
                           {num(j.km_total)} km
                         </span>
                       </li>
@@ -582,6 +588,7 @@ export default function Relatorios() {
                           <p className="text-[13.5px] font-medium">{m.type}</p>
                           <p className="truncate text-[12px] text-ink-muted">
                             {dataBR(m.date)} · {nomeVeiculo(m.vehicle_id)} · {num(m.km)} km
+                            {ehAdmin && m.driver_id ? ` · ${nomeCondutor(m.driver_id)}` : ""}
                           </p>
                         </div>
                         <span className="text-[13.5px] font-semibold">{brl(m.value)}</span>

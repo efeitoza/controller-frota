@@ -92,6 +92,35 @@ export const IconeWhatsApp = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const IconeEpi = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M4 13a8 8 0 0 1 16 0" />
+    <path d="M2.5 13h19a1.5 1.5 0 0 1 1.5 1.5v0A1.5 1.5 0 0 1 21.5 16h-19A1.5 1.5 0 0 1 1 14.5v0A1.5 1.5 0 0 1 2.5 13z" />
+    <path d="M9 13V6.5M15 13V6.5" />
+  </svg>
+);
+
+export const IconeOperacao = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M8 6h13M8 12h13M8 18h13" />
+    <path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+  </svg>
+);
+
+export const IconeEquipe = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <circle cx="9" cy="8" r="3.2" />
+    <path d="M3 20a6 6 0 0 1 12 0" />
+    <path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17.5 20a6 6 0 0 0-2.2-4.6" />
+  </svg>
+);
+
+export const IconeNovo = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);
+
 export const IconeSair = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}>
     <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />

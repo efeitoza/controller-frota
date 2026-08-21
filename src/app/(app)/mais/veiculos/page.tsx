@@ -70,13 +70,13 @@ export default function Veiculos() {
   return (
     <>
       <AppHeader titulo="Veículos" voltar="/mais" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         {ehAdmin && (
           <Card
             titulo={novo ? "Novo veículo" : "Frota"}
             acao={
               <button
-                className="text-[13px] font-semibold text-brand-700"
+                className="text-[13px] font-semibold text-brand-900"
                 onClick={() => setNovo((v) => !v)}
               >
                 {novo ? "cancelar" : "+ adicionar"}
@@ -204,7 +204,7 @@ export default function Veiculos() {
                   <Stat rotulo="Consumo médio" valor={kml(h?.consumo ?? null)} />
                 </div>
                 <button
-                  className="mt-3 w-full text-[13px] font-semibold text-brand-700"
+                  className="mt-3 w-full text-[13px] font-semibold text-brand-900"
                   onClick={() => setAberto(expandido ? null : v.id)}
                 >
                   {expandido ? "ocultar histórico" : "ver histórico"}

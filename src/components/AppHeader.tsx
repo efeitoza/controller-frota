@@ -6,50 +6,54 @@ import { IconeMais } from "./icons";
 
 export function AppHeader({ titulo, voltar }: { titulo?: string; voltar?: string }) {
   const { sessao, veiculoAtual, ehAdmin, ehSupervisor } = useSessao();
+
   const data = new Date().toLocaleDateString("pt-BR", {
-    weekday: "short",
+    weekday: "long",
     day: "2-digit",
     month: "long",
   });
+  const primeiroNome = (sessao?.user.name ?? "").split(" ")[0] || "Condutor";
+  const papel = ehAdmin ? "Gestor" : ehSupervisor ? "Supervisão" : "Condutor";
 
   return (
-    <header className="bg-gradient-to-b from-brand-800 to-brand-700 px-4 pb-5 pt-[calc(env(safe-area-inset-top)+16px)] text-white">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          {voltar ? (
-            <Link href={voltar} className="mb-1 inline-block text-[13px] text-brand-100">
-              ‹ voltar
-            </Link>
-          ) : (
-            <p className="text-[12.5px] text-brand-100">{data}</p>
-          )}
-          <h1 className="truncate text-[19px] font-semibold leading-tight">
-            {titulo ?? sessao?.user.name ?? "Condutor"}
-          </h1>
-          {!titulo && veiculoAtual && !ehSupervisor && (
-            <p className="mt-0.5 truncate text-[13px] text-brand-100">
-              {veiculoAtual.name} · {veiculoAtual.plate}
-            </p>
-          )}
-          {!titulo && ehSupervisor && (
-            <p className="mt-0.5 truncate text-[13px] text-brand-100">Supervisão de operação</p>
-          )}
-        </div>
+    <header className="bg-brand-900 px-5 pb-8 pt-[calc(env(safe-area-inset-top)+12px)] text-white">
+      <div className="mb-4 flex items-center justify-between">
+        <span className="rounded-lg bg-white/10 px-2.5 py-1.5 text-[12px] font-semibold tracking-wide">
+          Controller
+        </span>
         <div className="flex items-center gap-2">
-          {(ehAdmin || ehSupervisor) && (
-            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[10.5px] font-semibold">
-              {ehAdmin ? "ADMIN" : "SUPERVISÃO"}
-            </span>
-          )}
+          <span className="text-[11.5px] uppercase tracking-wider text-brand-200">{papel}</span>
           <Link
             href="/mais"
             aria-label="Mais opções"
-            className="rounded-full bg-white/15 p-2 transition active:scale-95"
+            className="rounded-full bg-white/10 p-2 transition active:scale-95"
           >
-            <IconeMais className="h-5 w-5" />
+            <IconeMais className="h-[18px] w-[18px]" />
           </Link>
         </div>
       </div>
+
+      {titulo ? (
+        <>
+          {voltar && (
+            <Link href={voltar} className="mb-1 inline-block text-[13px] text-brand-200">
+              ‹ voltar
+            </Link>
+          )}
+          <h1 className="text-[26px] font-semibold leading-tight">{titulo}</h1>
+        </>
+      ) : (
+        <>
+          <h1 className="text-[24px] font-semibold leading-tight">Olá, {primeiroNome}</h1>
+          <p className="mt-1 text-[14px] text-brand-200">
+            {ehSupervisor
+              ? "Supervisão de operação"
+              : veiculoAtual
+                ? `${veiculoAtual.name} · ${veiculoAtual.plate}`
+                : data}
+          </p>
+        </>
+      )}
     </header>
   );
 }

@@ -7,7 +7,7 @@ export interface Ponto {
   valor: number;
 }
 
-const COR = "#254deb"; // hue única (série única — sem legenda)
+const COR = "#2b4d73"; // hue única (série única — sem legenda)
 const GRADE = "#e2e8f0";
 const TEXTO = "#94a3b8";
 

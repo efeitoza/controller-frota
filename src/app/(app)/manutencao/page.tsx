@@ -107,7 +107,7 @@ export default function Manutencao() {
   return (
     <>
       <AppHeader titulo="Manutenção" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         <Card titulo="Nova manutenção">
           <form onSubmit={enviar} className="space-y-3">
             <Campo label="Veículo">

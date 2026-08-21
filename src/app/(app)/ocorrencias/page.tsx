@@ -85,7 +85,7 @@ export default function Ocorrencias() {
   return (
     <>
       <AppHeader titulo="Ocorrências" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         <Link href="/ocorrencias/nova" className="btn no-print">
           + Registrar ocorrência
         </Link>
@@ -97,7 +97,7 @@ export default function Ocorrencias() {
                 key={p.chave}
                 onClick={() => setChavePeriodo(p.chave)}
                 className={`chip ${
-                  chavePeriodo === p.chave ? "bg-brand-700 text-white" : "bg-slate-100 text-ink-soft"
+                  chavePeriodo === p.chave ? "bg-brand-900 text-white" : "bg-slate-100 text-ink-soft"
                 }`}
               >
                 {p.texto}

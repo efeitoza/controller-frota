@@ -134,7 +134,7 @@ export default function NovaOcorrencia() {
     return (
       <>
         <AppHeader titulo="Ocorrência registrada" voltar="/ocorrencias" />
-        <main className="-mt-3 space-y-3 px-4">
+        <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
           <Card>
             <Aviso nivel="ok" titulo="Salva no sistema">
               Registro de {dataBR(salva.date)} guardado. Agora é só encaminhar.
@@ -180,7 +180,7 @@ export default function NovaOcorrencia() {
   return (
     <>
       <AppHeader titulo="Nova ocorrência" voltar="/ocorrencias" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         <Card titulo="Dados da ocorrência">
           <form onSubmit={salvar} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">

@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  /** Esconde o selo do Next que fica sobre a barra inferior no modo dev. */
+  devIndicators: false,
+
   /**
    * Em desenvolvimento, o Next 16 só entrega os arquivos do dev server para o
    * próprio domínio. O Replit (e o Codespaces) servem o preview por um domínio

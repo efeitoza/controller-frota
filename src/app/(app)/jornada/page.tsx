@@ -114,7 +114,7 @@ export default function JornadaPage() {
   return (
     <>
       <AppHeader titulo="Jornada" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         {carregando ? (
           <Carregando />
         ) : aberta ? (
@@ -246,7 +246,7 @@ export default function JornadaPage() {
                       {num(j.end_km)}
                     </p>
                   </div>
-                  <span className="text-[14px] font-semibold text-brand-700">
+                  <span className="text-[14px] font-semibold text-brand-900">
                     {num(j.km_total)} km
                   </span>
                 </li>

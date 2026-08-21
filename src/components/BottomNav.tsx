@@ -33,7 +33,7 @@ export function BottomNav() {
       : ["home", "jornada", "abastecimento", "manutencao", "relatorios"];
 
   return (
-    <nav className="no-print fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+    <nav className="no-print fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]">
       <ul className="flex">
         {chaves.map((k) => {
           const { href, texto, Icone } = ITENS[k];
@@ -42,11 +42,14 @@ export function BottomNav() {
             <li key={href} className="flex-1">
               <Link
                 href={href}
-                className={`flex flex-col items-center gap-1 py-2.5 text-[10.5px] font-medium transition ${
-                  ativo ? "text-brand-700" : "text-ink-muted"
+                className={`flex flex-col items-center gap-1 py-3 text-[10.5px] font-medium transition ${
+                  ativo ? "text-brand-900" : "text-ink-muted"
                 }`}
               >
-                <Icone className="h-[22px] w-[22px]" strokeWidth={ativo ? 2.1 : 1.7} />
+                <Icone
+                  className={`h-[22px] w-[22px] ${ativo ? "text-ouro-400" : ""}`}
+                  strokeWidth={ativo ? 2 : 1.6}
+                />
                 {texto}
               </Link>
             </li>

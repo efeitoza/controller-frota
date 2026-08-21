@@ -126,7 +126,7 @@ export default function Abastecimento() {
   return (
     <>
       <AppHeader titulo="Abastecimento" />
-      <main className="-mt-3 space-y-3 px-4">
+      <main className="relative -mt-7 space-y-3 rounded-t-[28px] bg-[#f4f6f9] px-4 pb-3 pt-5">
         <Card titulo="Novo abastecimento">
           <form onSubmit={enviar} className="space-y-3">
             <Campo label="Veículo">
@@ -280,7 +280,7 @@ export default function Abastecimento() {
                       {!r.receipt_url && <Etiqueta texto="sem nota" cor="ambar" />}
                       <span
                         className={`text-[13.5px] font-semibold ${
-                          ruim ? "text-rose-600" : "text-brand-700"
+                          ruim ? "text-rose-600" : "text-brand-900"
                         }`}
                       >
                         {kml(r.consumption)}
