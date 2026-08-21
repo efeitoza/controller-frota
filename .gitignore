@@ -8,3 +8,7 @@ out
 .vercel
 next-env.d.ts
 tsconfig.tsbuildinfo
+
+# gerados automaticamente pelo Next 16
+AGENTS.md
+CLAUDE.md
